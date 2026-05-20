@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Service.Core/">
+    <Project Path="Service.Api/Service.Api.csproj" />
+    <Project Path="Service.Application/Service.Application.csproj" />
+    <Project Path="Service.Domain/Service.Domain.csproj" />
+    <Project Path="Service.Infrastructure/Service.Infrastructure.csproj" />
+  </Folder>
+</Solution>
