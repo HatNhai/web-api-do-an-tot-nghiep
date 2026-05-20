@@ -5,4 +5,7 @@
     <Project Path="Service.Domain/Service.Domain.csproj" />
     <Project Path="Service.Infrastructure/Service.Infrastructure.csproj" />
   </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
 </Solution>

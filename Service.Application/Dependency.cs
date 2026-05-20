@@ -1,10 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿// "Một sản phẩm từ phòng sharepoint. SIMAX-NhàiVtt"
 
-namespace Service.Application
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Service.Application.Interfaces;
+using Service.Application.Services;
+
+namespace Service.Core.Application
 {
-    internal class Dependency
+    public static class DependencyInjection
     {
+        public static IServiceCollection AddServicesDependencies(this IServiceCollection services, IConfiguration configuration)
+        {
+            AddService(services);
+            return services;
+        }
+        private static void AddService(IServiceCollection services)
+        {
+            services.AddScoped<IPredictService, PredictService>();
+        }
     }
 }
