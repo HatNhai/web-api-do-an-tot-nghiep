@@ -10,11 +10,11 @@ namespace Service.Infrastructure.MlServices.TrichChonDacTrung
             if (imageRgb == null || imageRgb.Empty())
                 throw new ArgumentException("Ảnh đầu vào không hợp lệ", nameof(imageRgb));
 
-            var f1 = TrichChonDacTrungF1.Extract(imageRgb);   // 12 color features
-            var f2 = TrichChonDacTrungF2.Extract(imageRgb);   // 7 vegetation features
-            var f3 = TrichChonDacTrungF3.Extract(imageRgb);   // 63 texture features
+            var f1 = TrichChonDacTrungF1.Extract(imageRgb);                  // 12
+            var vegetation = TrichChonDacTrungF2.ExtractVegetationOnly(imageRgb);  // 7
+            var texture = TrichChonDacTrungF3.ExtractTextureOnly(imageRgb);  // 63
 
-            return Concat.Arrays(f1, f2, f3);
+            return Concat.Arrays(f1, vegetation, texture);                    // 82
         }
     }
 }

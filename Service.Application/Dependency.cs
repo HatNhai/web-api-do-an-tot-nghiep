@@ -19,4 +19,5 @@ namespace Service.Core.Application
             services.AddScoped<IPredictService, PredictService>();
         }
     }
+
 }

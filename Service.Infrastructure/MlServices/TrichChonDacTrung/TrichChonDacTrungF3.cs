@@ -1,4 +1,5 @@
 ﻿using OpenCvSharp;
+using Service.Infrastructure.Helper;
 using System.Threading.Channels;
 
 namespace Service.Infrastructure.MlServices.TrichChonDacTrung
@@ -10,13 +11,31 @@ namespace Service.Infrastructure.MlServices.TrichChonDacTrung
         private const int LbpP = 8;          // 8 điểm xung quanh
         private const double LbpR = 1.0;     // Bán kính 1
         private const int LbpNumBins = 59;   // P*(P-1)+3 = 59 (theo Python code)
+
+        //public static double[] Extract(Mat imageRgb)
+        //{
+        //    var glcmFeatures = ExtractGLCM(imageRgb);
+
+        //    var lbpHistogram = ExtractLBP(imageRgb);
+
+        //    return Helper.Concat.Arrays(glcmFeatures, lbpHistogram);
+        //}
         public static double[] Extract(Mat imageRgb)
         {
+            if (imageRgb == null || imageRgb.Empty())
+                throw new ArgumentException("Ảnh đầu vào không hợp lệ", nameof(imageRgb));
+
+            var f1 = TrichChonDacTrungF1.Extract(imageRgb);   
+            var texture = ExtractTextureOnly(imageRgb);        
+            return Concat.Arrays(f1, texture); 
+            
+        }
+
+        public static double[] ExtractTextureOnly(Mat imageRgb)
+        {
             var glcmFeatures = ExtractGLCM(imageRgb);
-
             var lbpHistogram = ExtractLBP(imageRgb);
-
-            return Helper.Concat.Arrays(glcmFeatures, lbpHistogram);
+            return Concat.Arrays(glcmFeatures, lbpHistogram);  
         }
 
         /// <summary>

@@ -27,9 +27,8 @@
     <ProjectReference Include="..\Service.Domain\Service.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="MlServices\Models\" />
-    <Folder Include="Repositories\" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Service.Shared.Infrastructures.MSSQL" Version="1.1.16" />
+	</ItemGroup>
 
 </Project>

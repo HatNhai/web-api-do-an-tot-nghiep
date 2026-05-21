@@ -1,9 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Service.Domain.Entities;
+using Service.Shared.Infrastructures.MSSQL.Repositories.Bases;
 
 namespace Service.Infrastructure.Persistence
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : AuditableDbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {

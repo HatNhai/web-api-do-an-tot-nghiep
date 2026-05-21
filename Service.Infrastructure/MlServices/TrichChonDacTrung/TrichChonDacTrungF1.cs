@@ -22,6 +22,9 @@ namespace Service.Infrastructure.MlServices.TrichChonDacTrung
     {
         public static double[] Extract(Mat imageRgb)
         {
+            if (imageRgb == null || imageRgb.Empty())
+                throw new ArgumentException("Ảnh đầu vào không hợp lệ", nameof(imageRgb));
+
             var features = new double[12];
             var rgbChannels = Cv2.Split(imageRgb);
             try
