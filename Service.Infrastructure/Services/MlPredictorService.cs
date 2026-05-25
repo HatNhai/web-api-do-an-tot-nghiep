@@ -1,18 +1,20 @@
-﻿// "Đồ án tốt nghiệp - ML Predictor: OpenCV + ONNX Runtime"
+// "Đồ án tốt nghiệp - ML Predictor: OpenCV + ONNX Runtime"
 
+using Microsoft.Extensions.Logging;
 using Microsoft.ML.OnnxRuntime;
 using Microsoft.ML.OnnxRuntime.Tensors;
 using OpenCvSharp;
 using Service.Application.Interfaces;
 using Service.Infrastructure.MlServices;
 using Service.Infrastructure.MlServices.TrichChonDacTrung;
+using System.Diagnostics;
 
 namespace Service.Infrastructure.Services
 {
     /// <summary>
     /// Implementation của IMlPredictor — chạy ML pipeline đầy đủ:
     /// 1. Decode bytes → Mat (OpenCV) + resize 256x256
-    /// 2. Extract F2 (19 features) + F4 (82 features)
+    /// 2. Extract F2 (24 features) + F4 (87 features)
     /// 3. MLP Classification (F2 scaled) → confidence
     /// 4. RF Regression (F4) → severity ratio
     /// 5. RF Temporal Severity (F4) → severity level
@@ -23,20 +25,29 @@ namespace Service.Infrastructure.Services
         private readonly InferenceSession _rfRegressionSession;
         private readonly InferenceSession _rfSeveritySession;
         private readonly StandardScaler _f2Scaler;
+        private readonly ILogger<MlPredictorService> _logger;
 
         private const string ModelVersion = "v1.0-MLP+RF";
         private const int ImageSize = 256;
 
-        public MlPredictorService()
+        public MlPredictorService(ILogger<MlPredictorService> logger)
         {
+            _logger = logger;
+
             var modelsDir = Path.Combine(
                 AppContext.BaseDirectory,
-                "MlServices", "Models", "models_onnx");
+                "MlServices", "Models");
 
             if (!Directory.Exists(modelsDir))
+            {
+                _logger.LogCritical("Không tìm thấy folder models: {ModelsDir}", modelsDir);
                 throw new DirectoryNotFoundException(
                     $"Không tìm thấy folder models: {modelsDir}. " +
                     "Hãy chắc chắn các file .onnx được set 'Copy to Output Directory = Copy if newer'.");
+            }
+
+            _logger.LogInformation("Đang load các model ONNX từ {ModelsDir}...", modelsDir);
+            var sw = Stopwatch.StartNew();
 
             // Load 3 ONNX models + scaler (1 lần duy nhất khi DI khởi tạo Singleton)
             _mlpSession = new InferenceSession(
@@ -46,15 +57,17 @@ namespace Service.Infrastructure.Services
             _rfSeveritySession = new InferenceSession(
                 Path.Combine(modelsDir, "rf_f4_temporal_severity.onnx"));
 
-            // ⬇️ Đổi LoadFromJson → LoadFromFile cho khớp StandardScaler thực tế
             _f2Scaler = StandardScaler.LoadFromFile(
                 Path.Combine(modelsDir, "mlp_f2_scaler.json"));
 
-            // Log để debug (xem trong Output window khi chạy)
+            sw.Stop();
+            _logger.LogInformation("Load model xong trong {Elapsed} ms (version={Version})",
+                sw.ElapsedMilliseconds, ModelVersion);
+
             LogInputs("MLP Classification", _mlpSession);
             LogInputs("RF Regression", _rfRegressionSession);
             LogInputs("RF Severity", _rfSeveritySession);
-            Console.WriteLine($"[Scaler] NumberOfFeatures = {_f2Scaler.NumberOfFeatures}");
+            _logger.LogInformation("StandardScaler: NumberOfFeatures = {Count}", _f2Scaler.NumberOfFeatures);
         }
 
         public MlPredictionResult Predict(byte[] imageBytes)
@@ -63,26 +76,46 @@ namespace Service.Infrastructure.Services
                 throw new ArgumentException("Image bytes rỗng.", nameof(imageBytes));
 
             // 1. Decode + resize ảnh
+            var swStep = Stopwatch.StartNew();
             using var imageRgb = DecodeAndResize(imageBytes);
+            _logger.LogDebug("  - Decode + resize {Size}x{Size}: {Elapsed} ms",
+                ImageSize, ImageSize, swStep.ElapsedMilliseconds);
 
             // 2. Extract features
-            var f2 = TrichChonDacTrungF2.Extract(imageRgb);   // 19 features
-            var f4 = TrichChonDacTrungF4.Extract(imageRgb);   // 82 features
+            swStep.Restart();
+            var f2 = TrichChonDacTrungF2.Extract(imageRgb);   // 24 features
+            _logger.LogDebug("  - Trích F2 ({Count} đặc trưng): {Elapsed} ms", f2.Length, swStep.ElapsedMilliseconds);
+
+            swStep.Restart();
+            var f4 = TrichChonDacTrungF4.Extract(imageRgb);   // 87 features
+            _logger.LogDebug("  - Trích F4 ({Count} đặc trưng): {Elapsed} ms", f4.Length, swStep.ElapsedMilliseconds);
 
             // 3. MLP Classification (F2 → cần scale trước)
-            // ⬇️ Đổi sang TransformToFloat (vì ONNX cần float[])
+            swStep.Restart();
             var mlpInput = _f2Scaler.TransformToFloat(f2);
-            var mlpOutput = RunOnnx(_mlpSession, mlpInput);
-            double confidence = mlpOutput.Length > 0 ? mlpOutput.Max() : 0;
+            var mlpProbs = RunOnnxProbabilities(_mlpSession, mlpInput);
+            double confidence = mlpProbs.Length > 0 ? mlpProbs.Max() : 0;
+            _logger.LogDebug("  - MLP classification → confidence={Conf:F3} ({Elapsed} ms)",
+                confidence, swStep.ElapsedMilliseconds);
 
             // 4. RF Regression → SeverityRatio (0.0 - 1.0)
+            swStep.Restart();
             var rfInput = f4.Select(x => (float)x).ToArray();
             var regOutput = RunOnnx(_rfRegressionSession, rfInput);
             double severityRatio = Math.Clamp((double)regOutput[0], 0.0, 1.0);
+            _logger.LogDebug("  - RF regression → severityRatio={Ratio:F3} ({Elapsed} ms)",
+                severityRatio, swStep.ElapsedMilliseconds);
 
-            // 5. RF Temporal Severity → SeverityLevel (0..3)
-            var sevOutput = RunOnnx(_rfSeveritySession, rfInput);
+            // 5. RF Temporal Severity (F4 + time_index, 88 features) → SeverityLevel (0..3)
+            swStep.Restart();
+            float timeIndex = (float)Math.Clamp(Math.Round(severityRatio * 3.0), 0, 3);
+            var rfTempInput = new float[rfInput.Length + 1];
+            Array.Copy(rfInput, rfTempInput, rfInput.Length);
+            rfTempInput[rfInput.Length] = timeIndex;
+            var sevOutput = RunOnnx(_rfSeveritySession, rfTempInput);
             int severityLevel = Math.Clamp((int)Math.Round(sevOutput[0]), 0, 3);
+            _logger.LogDebug("  - RF severity → level={Level} ({Elapsed} ms)",
+                severityLevel, swStep.ElapsedMilliseconds);
 
             return new MlPredictionResult
             {
@@ -146,14 +179,43 @@ namespace Service.Infrastructure.Services
             }
         }
 
-        private static void LogInputs(string name, InferenceSession session)
+        /// <summary>
+        /// Chạy 1 classifier ONNX, trả về vector probabilities (output thứ 2 trong sklearn-onnx convention).
+        /// Output[0] = label (int64), Output[1] = probabilities (float[1, n_classes]).
+        /// </summary>
+        private static float[] RunOnnxProbabilities(InferenceSession session, float[] features)
+        {
+            var tensor = new DenseTensor<float>(features, new[] { 1, features.Length });
+            var inputName = session.InputMetadata.Keys.First();
+
+            var inputs = new List<NamedOnnxValue>
+            {
+                NamedOnnxValue.CreateFromTensor(inputName, tensor)
+            };
+
+            using var results = session.Run(inputs);
+            var resultList = results.ToList();
+
+            // Tìm output là tensor float (probabilities)
+            foreach (var r in resultList)
+            {
+                try { return r.AsEnumerable<float>().ToArray(); }
+                catch { /* skip non-float outputs */ }
+            }
+
+            // Fallback: chỉ có label → trả vector toàn 1.0 cho confidence
+            return new[] { 1.0f };
+        }
+
+        private void LogInputs(string name, InferenceSession session)
         {
             foreach (var input in session.InputMetadata)
             {
-                Console.WriteLine(
-                    $"[{name}] Input '{input.Key}': " +
-                    $"shape=[{string.Join(",", input.Value.Dimensions)}], " +
-                    $"type={input.Value.ElementType.Name}");
+                _logger.LogDebug(
+                    "[{Name}] Input '{Key}': shape=[{Shape}], type={Type}",
+                    name, input.Key,
+                    string.Join(",", input.Value.Dimensions),
+                    input.Value.ElementType.Name);
             }
         }
 
