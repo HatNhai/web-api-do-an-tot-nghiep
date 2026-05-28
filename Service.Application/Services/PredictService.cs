@@ -9,6 +9,8 @@ using Service.Domain.Entities;
 using Service.Share.Contract.Dtos;
 using Service.Share.Contract.Queries;
 using Service.Shared.Commons.Model.Commons;
+using Service.Shared.Commons.Interfaces.Extentions;
+using Service.Shared.Commons.Model.PHANQUYEN;
 using System.Diagnostics;
 
 namespace Service.Application.Services
@@ -19,17 +21,24 @@ namespace Service.Application.Services
         private readonly IMlPredictorService _mlPredictor;
         private readonly IWebHostEnvironment _env;
         private readonly ILogger<PredictService> _logger;
+        private readonly IRequestContext _requestContext;
+
+        // App chưa bật đăng nhập nên không có user thật. Dùng 1 user hệ thống cố định
+        // để CompleteAsync (đóng dấu audit) không ném "UserId cannot be empty".
+        private static readonly Guid SystemUserId = new("00000000-0000-0000-0000-000000000001");
 
         public PredictService(
             IUnitOfWork unitOfWork,
             IMlPredictorService mlPredictor,
             IWebHostEnvironment env,
-            ILogger<PredictService> logger)
+            ILogger<PredictService> logger,
+            IRequestContext requestContext)
         {
             _UnitOfWork = unitOfWork;
             _mlPredictor = mlPredictor;
             _env = env;
             _logger = logger;
+            _requestContext = requestContext;
         }
 
         public async Task<DataTableJson> GetPaged(DiagnosisQuery searchOption)
@@ -98,6 +107,7 @@ namespace Service.Application.Services
             };
 
             // 4. Lưu kết quả vào DB
+            EnsureSystemUser();
             var swDb = Stopwatch.StartNew();
             await _UnitOfWork.DiagnosisRepository.AddAsync(diagnosis);
             await _UnitOfWork.CompleteAsync();
@@ -121,6 +131,19 @@ namespace Service.Application.Services
                 ImagePath = diagnosis.ImagePath,
                 DiagnosedAt = diagnosis.DiagnosedAt,
                 Notes = diagnosis.Notes
+            };
+        }
+
+        private void EnsureSystemUser()
+        {
+            if (_requestContext.CurrentUser is { UserId: var uid } && uid != Guid.Empty)
+                return;
+
+            _requestContext.CurrentUser = new CurrentUserDto
+            {
+                UserId = SystemUserId,
+                UserName = "system",
+                FullName = "Hệ thống"
             };
         }
 
