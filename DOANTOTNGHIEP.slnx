@@ -8,6 +8,9 @@
   <Folder Name="/Service.Share/">
     <Project Path="Service.Share.Contract/Service.Share.Contract.csproj" Id="89ec0d87-7bef-4aa8-a82d-5e6c63c0dbe8" />
   </Folder>
+  <Folder Name="/Service.UI/">
+    <Project Path="Service.UI/Service.UI.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".gitignore" />
   </Folder>

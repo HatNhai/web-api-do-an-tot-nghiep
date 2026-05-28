@@ -1,0 +1,29 @@
+.model-gate-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(2px);
+}
+
+.model-gate-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 28px 36px;
+}
+
+.model-gate-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+}
+
+.model-gate-sub {
+    font-size: 13px;
+    color: #6b7280;
+}

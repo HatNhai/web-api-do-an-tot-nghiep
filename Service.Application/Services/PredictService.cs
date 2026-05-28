@@ -100,6 +100,7 @@ namespace Service.Application.Services
             // 4. Lưu kết quả vào DB
             var swDb = Stopwatch.StartNew();
             await _UnitOfWork.DiagnosisRepository.AddAsync(diagnosis);
+            await _UnitOfWork.CompleteAsync();
             swDb.Stop();
             _logger.LogDebug("[4/4] Đã lưu vào DB ({Elapsed} ms), Id={Id}", swDb.ElapsedMilliseconds, diagnosis.Id);
 

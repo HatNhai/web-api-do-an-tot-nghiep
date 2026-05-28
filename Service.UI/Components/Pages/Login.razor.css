@@ -1,0 +1,120 @@
+.ms-login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: linear-gradient(135deg, #e0f2fe 0%, #ffffff 50%, #dbeafe 100%);
+    background-image:
+        radial-gradient(circle at 15% 20%, rgba(14, 165, 233, 0.18) 0px, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(59, 130, 246, 0.18) 0px, transparent 40%),
+        linear-gradient(135deg, #e0f2fe 0%, #ffffff 50%, #dbeafe 100%);
+}
+
+.ms-login-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.ms-login-card {
+    width: 100%;
+    max-width: 420px;
+    padding: 36px 40px 32px 40px;
+    box-shadow: 0 12px 36px rgba(14, 38, 78, 0.14);
+    border-radius: 8px;
+    background-color: #ffffff;
+}
+
+.ms-login-header {
+    margin-bottom: 24px;
+}
+
+.ms-login-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0078d4;
+    margin-bottom: 14px;
+    letter-spacing: 0.3px;
+}
+
+    .ms-login-logo span {
+        color: #2b2b2b;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+.ms-login-title {
+    font-size: 26px;
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    color: #1b1b1b;
+}
+
+.ms-login-sub {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.ms-login-primary-btn {
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.btn-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.login-remember {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.ms-login-link-small {
+    font-size: 12px;
+    color: #106ebe;
+    text-decoration: none;
+}
+
+    .ms-login-link-small:hover {
+        text-decoration: underline;
+    }
+
+.login-divider {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin: 14px 0 4px;
+    font-size: 12px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #6b7280;
+}
+
+    .login-divider::before,
+    .login-divider::after {
+        content: "";
+        flex: 1;
+        height: 1px;
+        background: rgba(0, 0, 0, .12);
+    }
+
+.login-hint {
+    width: 100%;
+    margin-top: 14px;
+    font-size: 12px;
+    text-align: center;
+    color: #6b7280;
+    opacity: .9;
+}

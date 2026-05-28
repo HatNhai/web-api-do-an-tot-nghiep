@@ -1,0 +1,84 @@
+@page "/account/login"
+@layout Layout.EmptyLayout
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<PageTitle>Đăng nhập</PageTitle>
+
+<div class="ms-login-page">
+    <div class="ms-login-card-container">
+        <FluentCard Class="ms-login-card" MinimalStyle="true">
+            <div class="ms-login-header">
+                <div class="ms-login-logo">
+                    HỆ THỐNG CHẨN ĐOÁN BỆNH CHO CÂY TRỒNG
+                </div>
+                <h1 class="ms-login-title">Đăng nhập</h1>
+            </div>
+
+            <FluentStack Orientation="Orientation.Vertical"
+                         Style="width:100%; gap:12px; min-width:400px;">
+
+                <FluentTextField Name="username"
+                                 Autofocus="true"
+                                 @bind-Value="Username"
+                                 AutoComplete="off"
+                                 Placeholder="Email hoặc tên đăng nhập"
+                                 Label=""
+                                 Id="username-input"
+                                 Style="width: 100%" />
+
+                <FluentTextField type="password"
+                                 Name="password"
+                                 @bind-Value="Password"
+                                 AutoComplete="off"
+                                 Placeholder="Mật khẩu"
+                                 Label=""
+                                 Id="password-input"
+                                 Style="width: 100%" />
+
+                <div class="login-remember">
+                    <FluentCheckbox @bind-Value="RememberMe" Label="Ghi nhớ đăng nhập" />
+                    <a href="javascript:void(0)" class="ms-login-link-small">Quên mật khẩu?</a>
+                </div>
+
+                <FluentButton Id="login-submit-btn"
+                              Appearance="Appearance.Accent"
+                              Style="width: 100%; margin-top:8px; height:40px;"
+                              Class="ms-login-primary-btn"
+                              OnClick="HandleLogin">
+                    <span class="btn-content">
+                        <span>Đăng nhập</span>
+                        <FluentIcon Value="@(new Icons.Regular.Size20.ArrowRight())"
+                                    Color="Color.Custom" CustomColor="white" />
+                    </span>
+                </FluentButton>
+
+                <div class="login-divider" aria-hidden="true">
+                    <span>Hoặc</span>
+                </div>
+
+                <FluentButton Appearance="Appearance.Outline" Style="width: 100%; height:40px;">
+                    <span class="btn-content">
+                        <span>Đăng nhập bằng SSO</span>
+                        <FluentIcon Value="@(new Icons.Regular.Size20.GlobePerson())" />
+                    </span>
+                </FluentButton>
+
+                <div class="login-hint">
+                    © @DateTime.Now.Year. Bản quyền thuộc về Vũ Thị Thanh Nhài
+                </div>
+            </FluentStack>
+        </FluentCard>
+    </div>
+</div>
+
+@code {
+    private string Username { get; set; } = string.Empty;
+    private string Password { get; set; } = string.Empty;
+    private bool RememberMe { get; set; }
+
+    private void HandleLogin()
+    {
+        NavigationManager.NavigateTo("/du-doan");
+    }
+}

@@ -1,0 +1,123 @@
+@using Service.UI.Component.Shared.Navs
+@implements IDisposable
+@inject NavigationManager NavigationManager
+
+<div class="navmenu">
+    <input type="checkbox" title="Menu expand/collapse toggle" id="navmenu-toggle" class="navmenu-icon" />
+    <label for="navmenu-toggle" class="navmenu-icon">
+        <FluentIcon Value="@(new Icons.Regular.Size20.Navigation())" Color="Color.Neutral" />
+    </label>
+
+    <nav class="sitenav" aria-labelledby="main-menu">
+        <div class="navmenu-toolbar">
+
+            <FluentSelect TOption="ModuleTreeDto"
+                          Items="@RootModules"
+                          Width="150px"
+                          OptionText="@(m => m.TenModule)"
+                          OptionValue="@(m => m.Id.ToString())"
+                          Placeholder="Lọc nhóm menu"
+                          Value="@SelectedRootId"
+                          ValueChanged="@OnRootModuleChanged" />
+
+            <div class="navmenu-toolbar-actions">
+
+                <FluentButton IconStart="@(new Icons.Regular.Size20.ArrowCollapseAll())"
+                              Appearance="Appearance.Lightweight"
+                              Title="Đóng tất cả"
+                              OnClick="@NotifyNotImplemented" />
+                <FluentButton IconStart="@(new Icons.Regular.Size20.ArrowExpandAll())"
+                              Appearance="Appearance.Lightweight"
+                              Title="Mở tất cả"
+                              OnClick="@NotifyNotImplemented" />
+            </div>
+        </div>
+
+        <FluentNavMenu Id="main-menu" Title="Main menu" Width="260">
+            <FluentNavLink Href="/du-doan"
+                           Match="NavLinkMatch.Prefix"
+                           Icon="@(new Icons.Regular.Size20.ScanCamera())"
+                           IconColor="Color.Accent">
+                Mô hình dự đoán
+            </FluentNavLink>
+            <FluentNavLink Href="/log-du-doan"
+                           Match="NavLinkMatch.Prefix"
+                           Icon="@(new Icons.Regular.Size20.History())"
+                           IconColor="Color.Accent">
+                Lịch sử dự đoán
+            </FluentNavLink>
+        </FluentNavMenu>
+    </nav>
+</div>
+
+<style>
+    .navmenu,
+    .navmenu * {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    }
+
+    .navmenu-toolbar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+
+    .navmenu-toolbar-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+</style>
+
+@code {
+    [Inject] private IToastService ToastService { get; set; } = default!;
+
+    private List<ModuleTreeDto> RootModules { get; set; } = new();
+    private string? SelectedRootId { get; set; }
+    private async Task OnRootModuleChanged(string? value)
+    {
+        StateHasChanged();
+    }
+    private List<NavItem> NavMenuItems = new List<NavItem>();
+    private void ExpandAll() => SetExpandedAll(NavMenuItems, expanded: true);
+    private void CollapseAll() => SetExpandedAll(NavMenuItems, expanded: false);
+    private void SetExpandedAll(List<NavItem> items, bool expanded)
+    {
+        foreach (var item in items)
+        {
+            if (item is NavGroup group)
+            {
+                group.Expanded = expanded;
+                SetExpandedAll(group.Children, expanded); 
+            }
+        }
+        StateHasChanged();
+    }
+    private void NotifyNotImplemented()
+    {
+        ToastService.ShowInfo("Tính năng chưa phát triển");
+    }
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+    public class ModuleTreeDto
+    {
+        public Guid Id { get; set; }
+        public Guid? ModuleChaId { set; get; }
+        public string TenModule { set; get; } = string.Empty;
+        public string? Icon { get; set; }
+        
+    }
+}

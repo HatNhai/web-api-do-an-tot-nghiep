@@ -28,5 +28,11 @@
         /// <param name="imageBytes">Bytes của ảnh (jpg/png).</param>
         /// <returns>Kết quả dự đoán gồm severity level, ratio, confidence.</returns>
         MlPredictionResult Predict(byte[] imageBytes);
+
+        /// <summary>
+        /// Chạy thử pipeline với 1 ảnh giả để ép load model + JIT ngay khi khởi động,
+        /// tránh để cold-start rơi vào request dự đoán đầu tiên (gây timeout).
+        /// </summary>
+        void Warmup();
     }
 }

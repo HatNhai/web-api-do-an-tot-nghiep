@@ -1,0 +1,66 @@
+::deep .siteheader {
+    background: linear-gradient(90deg, #0078d4 0%, #1e88e5 100%);
+    color: #fff;
+    height: 56px;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.site-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #fff;
+}
+
+.brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.brand-sub {
+    font-size: 13px;
+    opacity: 0.85;
+    font-weight: 400;
+}
+
+.header-user {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.header-logout {
+    color: #fff;
+    margin-left: 10px;
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+    .header-logout:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+
+::deep .body-stack {
+    height: calc(100dvh - 56px);
+    overflow: hidden;
+}
+
+::deep .body-content {
+    height: calc(100dvh - 56px);
+    overflow-y: auto;
+    background: #ffffff;
+}
+
+.content-wrap {
+    padding: 20px 24px;
+}

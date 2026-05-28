@@ -1,0 +1,175 @@
+@page "/log-du-doan"
+@page "/log-du-doan/{Year}"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.FluentUI.AspNetCore.Components
+@using Service.Shared.Commons.Model.PHANQUYEN
+@using Service.Shared.Commons.Model.ServiceCustomHttpClient
+@using Service.Shared.Commons.Querys.Grid
+@using Service.UI.Component.Shared.Confirms
+
+@layout MainLayout
+
+<PageTitle>Nhật ký chẩn đoán bệnh</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+    <h2>Danh sách lịch sử tra cứu</h2>
+
+    <SearchPanel Title="Bộ lọc nhật ký" @bind-ShowAdvanced="ShowAdvancedSearch">
+        <HeaderActionsContent>
+            <FluentSelect Items="@(YearConfig.DataSearchYear)"
+                          SelectedOption="@SYear"
+                          SelectedOptionChanged="EventCallback.Factory.Create<int>(this, OnYearChanged)"
+                          Width="90px" />
+        </HeaderActionsContent>
+        <BasicFields>
+            <div>
+                <label for="keyword">Từ khóa</label>
+                <FluentTextField @bind-Value="WorkingFilter.Keyword"
+                                 Style="width: 100%;"
+                                 Placeholder="Tên ảnh, ghi chú..." />
+            </div>
+            <div>
+                <label for="severity">Mức độ bệnh</label>
+                <FluentSelect TOption="string" @bind-Value="WorkingFilter.SeverityLevel">
+                    <FluentOption Value="-1">---Tất cả mức độ---</FluentOption>
+                    <FluentOption Value="0">Bình thường</FluentOption>
+                    <FluentOption Value="1">Nhẹ</FluentOption>
+                    <FluentOption Value="2">Trung bình</FluentOption>
+                    <FluentOption Value="3">Nặng</FluentOption>
+                </FluentSelect>
+            </div>
+            <div>
+                <label for="fromDate">Từ ngày</label>
+                <FluentDatePicker Culture="@(new System.Globalization.CultureInfo("vi-VN"))"
+                                  @bind-Value="WorkingFilter.TuNgay"
+                                  Style="width: 100%;" />
+            </div>
+            <div>
+                <label for="toDate">Đến ngày</label>
+                <FluentDatePicker Culture="@(new System.Globalization.CultureInfo("vi-VN"))"
+                                  @bind-Value="WorkingFilter.DenNgay"
+                                  Style="width: 100%;" />
+            </div>
+        </BasicFields>
+
+        <Actions>
+            <FluentButton Appearance="Appearance.Accent"
+                          OnClick="ApplyFiltersAsync"
+                          Style="background-color:#8b572a; color:white;">
+                Tìm kiếm
+            </FluentButton>
+            <FluentButton IconStart="@(new Icons.Regular.Size20.History())"
+                          OnClick="@(() => Filter("thisweek"))">
+                Tuần này
+            </FluentButton>
+            <FluentButton OnClick="ResetFiltersAsync">
+                Làm mới
+            </FluentButton>
+        </Actions>
+    </SearchPanel>
+
+    <SurfaceCard Class="grid-card">
+        <ChildContent>
+            <div class="grid-toolbar">
+                <div class="toolbar-left">
+                    <FluentButton Title="Tạo chẩn đoán mới"
+                                  Appearance="Appearance.Accent"
+                                  OnClick="@(() => TaoChanDoanMoi())"
+                                  Style="width:160px;">
+                        Tạo chẩn đoán mới
+                    </FluentButton>
+                </div>
+            </div>
+
+            <div class="grid-wrap">
+                <SIGrid @ref="siGrid"
+                        TItem="DiagnosisItem"
+                        ParameterRequestModel="@RequestModel"
+                        QueryObject="@DiagnosisQuery"
+                        TQuery="DiagnosisQuery"
+                        ShowCheckbox="false"
+                        ShowStt="false"
+                        EnableMultiLine="true"
+                        GridTemplateColumns="15% 25% 10% 10% 12% 12% 16%">
+
+                    <SIGridColumnDef Title="Thời gian" Sortable="false">
+                        @context.DiagnosedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")
+                    </SIGridColumnDef>
+
+                    <SIGridColumnDef Title="Tên ảnh" Sortable="false" ContentCenter="false">
+                        <div style="max-width: 350px">
+                            <NavLink href="@($"/log-du-doan/chi-tiet/{SYear}/{context.Id}")"
+                                     style="cursor:pointer;color: var(--accent-fill-rest);text-decoration:none;">
+                                <div class="file-cell">
+                                    <FluentIcon Value="@(new Icons.Regular.Size16.Image())" Color="Color.Accent" />
+                                    <FluentHighlighter HighlightedText="@(DiagnosisQuery.Keyword ?? string.Empty)"
+                                                       Delimiters=" ,;"
+                                                       Text="@(context.ImageFileName ?? string.Empty)" />
+                                </div>
+                            </NavLink>
+                            @if (!string.IsNullOrWhiteSpace(context.Notes))
+                            {
+                                <div class="note-cell" title="@context.Notes">@context.Notes</div>
+                            }
+                        </div>
+                    </SIGridColumnDef>
+
+                    <SIGridColumnDef Title="Mức độ">
+                        @if (context.SeverityLevel == 0)
+                        {
+                            <FluentBadge Appearance="Appearance.Accent" BackgroundColor="#137333" Color="#ffffff">Bình thường</FluentBadge>
+                        }
+                        else if (context.SeverityLevel == 1)
+                        {
+                            <FluentBadge Appearance="Appearance.Accent" BackgroundColor="#8a6d00" Color="#ffffff">Nhẹ</FluentBadge>
+                        }
+                        else if (context.SeverityLevel == 2)
+                        {
+                            <FluentBadge Appearance="Appearance.Accent" BackgroundColor="#b25e09" Color="#ffffff">Trung bình</FluentBadge>
+                        }
+                        else if (context.SeverityLevel == 3)
+                        {
+                            <FluentBadge Appearance="Appearance.Accent" BackgroundColor="#b3261e" Color="#ffffff">Nặng</FluentBadge>
+                        }
+                    </SIGridColumnDef>
+
+                    <SIGridColumnDef Title="Tỉ lệ vùng">
+                        @context.SeverityRatio.ToString("P1")
+                    </SIGridColumnDef>
+
+                    <SIGridColumnDef Title="Độ tin cậy">
+                        <div class="conf-cell">
+                            <span>@context.Confidence.ToString("P1")</span>
+                            <FluentProgress Min="0" Max="100"
+                                            Value="@((int)(context.Confidence * 100))"
+                                            Style="width:80px;" />
+                        </div>
+                    </SIGridColumnDef>
+
+                    <SIGridColumnDef Title="Mô hình">
+                        @context.ModelUsed
+                    </SIGridColumnDef>
+
+                    <SIGridActionDef>
+                        <FluentButton Title="Xem ảnh" Appearance="Appearance.Outline"
+                                      Disabled="@string.IsNullOrEmpty(context.ImagePath)"
+                                      OnClick="@(() => OpenImage(context.ImagePath))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Eye())" />
+                        </FluentButton>
+
+                        <FluentButton Title="Sao chép mã" Appearance="Appearance.Outline"
+                                      OnClick="@(() => CopyIdAsync(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Copy())" />
+                        </FluentButton>
+
+                        <FluentButton Title="Xóa" Appearance="Appearance.Outline"
+                                      OnClick="@(() => OpenModalDelete(context.Id))">
+                            <FluentIcon Value="@(new Icons.Regular.Size16.Delete())" />
+                        </FluentButton>
+                    </SIGridActionDef>
+                </SIGrid>
+            </div>
+        </ChildContent>
+    </SurfaceCard>
+</FluentStack>

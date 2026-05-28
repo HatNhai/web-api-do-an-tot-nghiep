@@ -12,6 +12,7 @@ using Service.Infrastructure;
 using Service.Infrastructure.Services;
 using Service.Shared.Commons.Interfaces.Extentions;
 using Service.Shared.Commons.Services;
+using Service.Api;
 using System.Reflection;
 
 // Bootstrap logger để bắt log ngay từ lúc start app (trước cả khi DI sẵn sàng)
@@ -48,6 +49,7 @@ try
 
     builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
     builder.Services.AddSingleton<IMlPredictorService, MlPredictorService>();
+    builder.Services.AddSingleton<ModelReadinessState>();
     builder.Services.AddScoped<IPredictService, PredictService>();
 
     builder.Services.AddEndpointsApiExplorer();
@@ -117,7 +119,31 @@ try
     app.UseAuthorization();
     app.MapControllers();
 
-    Log.Information("Service.Api đã sẵn sàng. Mở Swagger ở /swagger để thử API.");
+    // Endpoint nhẹ để UI kiểm tra model đã sẵn sàng chưa.
+    // KHÔNG phụ thuộc model nặng nên trả lời tức thì kể cả khi model đang nạp.
+    app.MapGet("/api/health/ready", (ModelReadinessState state) =>
+        Results.Ok(new { ready = state.IsReady, error = state.Error }));
+
+    // Warm-up model ở LUỒNG NỀN: API khởi động & nhận request ngay lập tức, model nạp phía sau
+    // (load 3 model ONNX + init ONNX Runtime/OpenCV + JIT pipeline). UI hiện màn loading và poll
+    // /api/health/ready cho tới khi model sẵn sàng → tránh cold-start dồn vào request đầu gây timeout.
+    var readiness = app.Services.GetRequiredService<ModelReadinessState>();
+    _ = Task.Run(() =>
+    {
+        try
+        {
+            app.Services.GetRequiredService<IMlPredictorService>().Warmup();
+            readiness.MarkReady();
+            Log.Information("Model ML đã sẵn sàng phục vụ.");
+        }
+        catch (Exception ex)
+        {
+            readiness.MarkFailed(ex.Message);
+            Log.Error(ex, "Warm-up model thất bại.");
+        }
+    });
+
+    Log.Information("Service.Api đã khởi động (model đang nạp ở luồng nền). Swagger ở /swagger.");
 
     app.Run();
 }

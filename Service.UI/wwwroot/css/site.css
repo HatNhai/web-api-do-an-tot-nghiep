@@ -1,0 +1,997 @@
+/* ════════════════════════════════════════════════════════════════════════ */
+/*  E-OFFICE BỘ GD&ĐT — SITE STYLES                                          */
+/*  Cấu trúc:                                                                */
+/*    1. Imports & Fonts                                                     */
+/*    2. CSS Variables (theme tokens)                                        */
+/*    3. Base (html, body, scrollbar)                                        */
+/*    4. Fluent UI Typography Overrides (tabs, navmenu, table, data-grid)    */
+/*    5. Layout (header, footer, sitenav, article, aside)                    */
+/*    6. UI Custom Components (news, info, search, navbar)                   */
+/*    7. Forms & Tables Custom (s-form-view, si-table, grid-toolbar)         */
+/*    8. Floating Elements (footer treo, blazor-error)                       */
+/*    9. Fluent UI Animations (tab, button effects)                          */
+/*   10. Loading Animation                                                   */
+/*   11. YouTube Responsive                                                  */
+/*   12. Responsive Media Queries                                            */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 1. IMPORTS & FONTS                                                        */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+@import url('../_content/Microsoft.FluentUI.AspNetCore.Components/css/reboot.css');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap');
+
+
+
+/* ─── 2. CSS VARIABLES ─── */
+fluent-design-theme,
+:root {
+    --body-font: 'Noto Sans', 'Segoe UI', -apple-system, sans-serif !important;
+    --type-ramp-minus-2-font-size: 12px !important;
+    --type-ramp-minus-1-font-size: 13px !important;
+    --type-ramp-base-font-size: 15px !important;
+    --type-ramp-plus-1-font-size: 17px !important;
+    --type-ramp-plus-2-font-size: 22px !important;
+    --type-ramp-plus-3-font-size: 26px !important;
+    --type-ramp-base-line-height: 22px !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 3. BASE                                                                   */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+html {
+    scrollbar-width: thin; /* auto | thin | none */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: var(--body-font);
+    font-size: var(--type-ramp-base-font-size);
+    line-height: var(--type-ramp-base-line-height);
+    font-weight: var(--font-weight);
+    color: var(--neutral-foreground-rest);
+    background: var(--neutral-fill-layer-rest);
+}
+
+/* Scrollbar webkit */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #888;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: #f1f1f1;
+}
+
+/* Reset blockquote */
+blockquote p:last-child {
+    margin-bottom: 0;
+}
+
+/* Label cursor */
+label {
+    color: var(--neutral-foreground-rest);
+    cursor: pointer;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 4. FLUENT UI TYPOGRAPHY OVERRIDES                                         */
+/* Áp font + cỡ chữ cho các Web Components Fluent UI                         */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 4.1. Áp font cho toàn hệ thống --------------------------------------- */
+body,
+.fluent-design-system-provider,
+fluent-button,
+fluent-text-field,
+fluent-select,
+fluent-data-grid {
+    font-family: var(--body-font) !important;
+    font-size: var(--type-ramp-base-font-size);
+}
+b,
+strong {
+    font-weight: 700 !important;
+    font-variation-settings: "wght" 700 !important;
+}
+/* 4.2. Tabs (Thông tin văn bản / Ý kiến / Nhật ký xử lý) --------------- */
+fluent-tabs {
+    --type-ramp-base-font-size: 16px;
+    --type-ramp-base-line-height: 24px;
+}
+
+fluent-tab {
+    font-size: 16px !important;
+    font-weight: 500;
+    min-height: 44px;
+    padding: 8px 20px !important;
+}
+
+    fluent-tab[aria-selected="true"] {
+        font-weight: 600;
+    }
+
+    fluent-tab::part(content) {
+        font-size: 16px;
+    }
+
+/* 4.3. NavMenu (sidebar trái) ------------------------------------------ */
+fluent-nav-menu {
+    --type-ramp-base-font-size: 15px;
+    --type-ramp-base-line-height: 22px;
+}
+
+fluent-nav-link,
+fluent-nav-group {
+    font-size: 15px !important;
+    min-height: 40px;
+}
+
+fluent-nav-group {
+    font-weight: 600;
+}
+
+    fluent-nav-link::part(positioning-region),
+    fluent-nav-group::part(expand-collapse-button) {
+        font-size: 15px !important;
+        min-height: 40px;
+        padding: 8px 12px;
+    }
+
+    /* Icon menu to hơn chút */
+    fluent-nav-link svg,
+    fluent-nav-group svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+
+/* Item active đậm hơn */
+.fluent-nav-link.notactive .fluent-nav-text {
+    font-weight: 600 !important;
+}
+
+/* 4.4. Bảng dữ liệu (table thường + fluent-data-grid) ----------------- */
+.fluent-data-grid {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+}
+
+table th {
+    font-size: 15px !important;
+    line-height: 1.5 !important;
+    font-weight: 600 !important;
+    color: #1a1a1a !important;
+}
+
+/* 4.5. Stat card (Bàn làm việc) --------------------------------------- */
+.stat-label,
+.stat-value {
+    font-size: 14px !important;
+}
+
+/* 4.6. Tiêu đề trang -------------------------------------------------- */
+.fluent-typography-h4 {
+    font-size: 24px !important;
+    font-weight: 700 !important;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 5. LAYOUT                                                                 */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 5.1. Body stack (vùng chứa nav + content) --------------------------- */
+.body-stack {
+    flex-direction: row;
+}
+
+/* 5.2. Site header ---------------------------------------------------- */
+.siteheader {
+    border-bottom: calc(var(--stroke-width) * 2px) solid var(--accent-fill-rest);
+    margin-bottom: 0 !important;
+    height: 75px !important;
+}
+
+    .siteheader .logo {
+        width: 108px;
+        height: 23px;
+        grid-column: 1;
+    }
+
+    .siteheader .search {
+        display: flex;
+        align-items: center;
+        padding-right: 20px;
+    }
+
+    .siteheader .links {
+        padding-right: 10px;
+        display: flex;
+        align-items: center;
+    }
+
+    /*.siteheader .notifications {
+        display: flex;
+        align-items: center;
+    }*/
+
+    .siteheader .settings {
+        padding-right: 6px;
+        display: flex;
+        align-items: center;
+        margin-left: 0;
+        margin-right: 10px;
+    }
+
+/* RTL support */
+[dir="rtl"] .siteheader .settings {
+    padding: 0 0 0 6px;
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+[dir="rtl"] .siteheader .search {
+    padding-left: 20px;
+    padding-right: 0;
+}
+
+[dir="rtl"] .siteheader .links {
+    padding-left: 10px;
+}
+
+/* Header gutters - background image */
+.header-gutters {
+    height: 75px;
+    justify-content: space-between;
+    background-image: url("/img/bg-header-3.png");
+    background-repeat: no-repeat;
+    background-position: right center;
+    background-size: auto 100%;
+    background-blend-mode: multiply;
+    padding: 0 24px;
+    border-bottom: 1px solid #e6e6e6;
+    margin: 0 !important;
+}
+
+/* Header background custom */
+.header {
+    background-color: var(--neutral-layer-4) !important;
+    font-weight: 600 !important;
+}
+
+/* Notification button icon */
+.btn-noti .fluentui-counterbadge-container svg {
+    fill: #fff !important;
+    width: 23px !important;
+}
+
+/* Navbar QA stack icon */
+.navbar-nav .qa-stack svg {
+    fill: #fff !important;
+}
+
+/* 5.3. Site nav (sidebar trái) ---------------------------------------- */
+nav.sitenav {
+    padding: 1.5rem 1rem;
+    height: calc(100dvh - 90px);
+    width: 20rem;
+    overflow-y: auto;
+}
+
+nav h2 {
+    font-size: var(--type-ramp-plus-1-font-size);
+    line-height: var(--type-ramp-plus-1-line-height);
+    padding: 15px 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+nav h3 {
+    font-size: var(--type-ramp-base-font-size);
+    line-height: var(--type-ramp-minus-1-line-height);
+    padding: 10px 0;
+    margin: 0;
+    pointer-events: none;
+}
+
+nav fluent-anchor {
+    width: 100%;
+    color: var(--fill-color);
+}
+
+    nav fluent-anchor::part(control) {
+        justify-content: start;
+        background: var(--accent-fill-rest);
+    }
+
+/* 5.4. Article + aside ------------------------------------------------ */
+article {
+    padding: 1.5rem 1rem;
+    margin: 0 0;
+}
+
+aside {
+    padding: 1.5rem 1rem;
+    top: 0px;
+    height: 100vh;
+    position: sticky;
+    width: 18rem;
+    max-height: calc(100dvh - 90px);
+    overflow-y: auto;
+}
+
+/* 5.5. Footer --------------------------------------------------------- */
+.footer {
+    display: flex !important;
+    flex-direction: row !important;
+    background: var(--neutral-layer-4);
+    color: var(--neutral-foreground-rest) !important;
+    padding: 10px 10px;
+    margin-top: 0px !important;
+}
+
+    .footer .version a {
+        color: var(--neutral-foreground-rest);
+        text-decoration: none;
+    }
+
+        .footer .version a:focus {
+            outline: 1px dashed;
+            outline-offset: 3px;
+        }
+
+        .footer .version a:hover {
+            text-decoration: underline;
+        }
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 6. UI CUSTOM COMPONENTS                                                   */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 6.1. News list ------------------------------------------------------ */
+ul.news {
+    padding-left: 0;
+    list-style-type: none;
+}
+
+    ul.news li {
+        display: flex;
+        gap: calc(var(--design-unit) * 2px);
+        align-items: center;
+        padding-bottom: calc(var(--design-unit) * 2px);
+    }
+
+.news .calendar {
+    /* placeholder */
+}
+
+.news a {
+    font-size: var(--type-ramp-plus-1-font-size);
+    line-height: var(--type-ramp-plus-1-line-height);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+/* 6.2. Info label (form chi tiết) ------------------------------------- */
+.info-label {
+    min-width: 120px;
+    white-space: nowrap;
+    font-weight: 600 !important;
+}
+
+/* 6.2b. Dấu bắt buộc (*) ---------------------------------------------- */
+.dau-bat-buoc {
+    color: red;
+}
+
+/* 6.2c. Text align end ------------------------------------------------- */
+.text-end {
+    text-align: end;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* 6.3. Search result icon --------------------------------------------- */
+.search-result-icon {
+    vertical-align: middle;
+}
+
+/* 6.4. Home page divider ---------------------------------------------- */
+.home div[sm="4"],
+.home div[sm="6"],
+.home div[sm="8"] {
+    border-bottom: 1px solid var(--neutral-stroke-divider-rest) !important;
+}
+
+/* 6.5. Color picker (header) ------------------------------------------ */
+#color {
+    margin-right: 10px;
+    margin-left: 0;
+}
+
+[dir="rtl"] #color {
+    margin-left: 10px;
+    margin-right: 0;
+}
+
+/* 6.6. NavMenu toggle (mobile) ---------------------------------------- */
+#navmenu-toggle {
+    display: none;
+}
+
+.navmenu-icon {
+    display: none;
+}
+
+#navmenu-toggle:checked > nav {
+    width: 0px;
+}
+
+[dir="rtl"] #navmenu-toggle:checked ~ nav {
+    right: 0px;
+}
+
+/* 6.7. Code blocks & demo --------------------------------------------- */
+.shell,
+.sourceCode {
+    background: var(--neutral-stroke-layer-rest);
+    padding: 7px;
+}
+
+code {
+    background: var(--neutral-stroke-layer-rest);
+}
+
+.demopanel {
+    border: 1px dashed var(--accent-fill-rest);
+    padding: 5px;
+}
+
+/* 6.8. Highlighted row ------------------------------------------------ */
+.highlighted {
+    background-color: var(--accent-stroke-control-active);
+}
+
+    .highlighted > td {
+        color: var(--neutral-fill-inverse-rest);
+    }
+
+/* 6.9. Keyboard key --------------------------------------------------- */
+kbd {
+    padding: 0.10rem 0.25rem;
+    font-size: 0.875em;
+    color: var(--neutral-foreground-rest);
+    background-color: var(--neutral-fill-secondary-rest);
+    border-radius: 0.25rem;
+    border: 1px solid var(--accent-fill-rest);
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 7. FORMS & TABLES (CUSTOM PROJECT)                                        */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 7.1. S-form-view ---------------------------------------------------- */
+.s-form-view .row-info {
+    display: grid;
+    grid-template-columns: 30% 70%;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+}
+
+    .s-form-view .row-info label,
+    .s-form-view label {
+        font-weight: 500;
+    }
+
+/* 7.2. SSO form view -------------------------------------------------- */
+.sso-form-view .row-info label {
+    font-weight: 500;
+}
+
+/* 7.3. SI table (table info chi tiết) --------------------------------- */
+.si-table {
+    border: 1px solid #e1dfdd;
+}
+
+    .si-table tr {
+        padding: 15px;
+        border: 1px solid #e1dfdd;
+    }
+
+        .si-table tr td {
+            padding: 15px;
+            border: 1px solid #e1dfdd;
+        }
+
+        .si-table tr td {
+            font-size: 15px !important;
+            line-height: 1.5 !important;
+            padding: 12px 15px !important;
+        }
+
+            .si-table tr td:nth-child(odd) {
+                font-weight: 700 !important;
+                font-variation-settings: "wght" 700, "opsz" 10.5 !important; /* ← thêm dòng này */
+                color: #2d2d2d !important;
+                background-color: #fafafa; /* nền nhạt giúp label nổi bật */
+                width: 18%; /* override inline width="15%" cho rộng hơn */
+            }
+
+/* 7.4. Grid toolbar (thanh công cụ trên bảng) ------------------------- */
+.grid-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    padding: 0 0 1rem;
+    border-bottom: 1px dashed #d9e0ee;
+}
+
+.toolbar-left,
+.toolbar-right {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 8. FLOATING ELEMENTS                                                      */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 8.1. Footer treo dưới (action bar) ---------------------------------- */
+.khoi-treo-footer {
+    position: fixed;
+    margin: 0 auto;
+    background: #fff;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    z-index: 20;
+    bottom: 0px;
+    left: 320px;
+    right: 21px;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 8.2. Toast provider ------------------------------------------------- */
+.fluent-toast-provider {
+    z-index: 9999 !important;
+}
+
+/* 8.3. Blazor error UI ------------------------------------------------ */
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+    margin: 20px 0;
+    color: var(--neutral-foreground-rest);
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    border: 1px dashed var(--error);
+    background: url("data:image/svg+xml;base64,PHN2ZyB3aWR0aD0nNDgnIGhlaWdodD0nNDgnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZycgeG1sbnM6eGxpbms9J2h0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsnIG92ZXJmbG93PSdoaWRkZW4nIGZpbGw9JyNCQzJGMzInPjxwYXRoIGQ9J00yNCA0YTIwIDIwIDAgMSAwIDAgNDAgMjAgMjAgMCAwIDAgMC00MFptMCA5Yy42OSAwIDEuMjUuNTYgMS4yNSAxLjI1djEyLjVhMS4yNSAxLjI1IDAgMSAxLTIuNSAwdi0xMi41YzAtLjY5LjU2LTEuMjUgMS4yNS0xLjI1Wm0wIDIxYTIgMiAwIDEgMSAwLTQgMiAyIDAgMCAxIDAgNFonPjwvcGF0aD48L3N2Zz4=") no-repeat 1rem/1.8rem;
+    padding: 1rem 1rem 1rem 3.7rem;
+}
+
+    .blazor-error-boundary::before {
+        content: "An error has occurred: ";
+    }
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 9. FLUENT UI ANIMATIONS                                                   */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 9.1. Tab effects ---------------------------------------------------- */
+fluent-tab {
+    transition: background 0.25s ease, color 0.25s ease, margin-left 0.25s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    transform: translateY(0);
+}
+
+    fluent-tab[aria-selected="true"] {
+        background: padding-box linear-gradient(var(--accent-fill-rest), var(--accent-fill-rest)), border-box var(--accent-stroke-control-rest);
+        color: var(--foreground-on-accent-rest);
+        margin-left: 5px;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Active state khi nhấn */
+    fluent-tab:active {
+        transform: translateY(1px);
+        box-shadow: none;
+        transition: transform 0.08s ease, box-shadow 0.08s ease;
+    }
+
+    /* Icon trong tab - không bị mờ */
+    fluent-tab svg,
+    fluent-tab fluent-icon {
+        opacity: 1 !important;
+        color: inherit !important;
+        fill: currentColor !important;
+    }
+
+    fluent-tab[aria-selected="false"] svg {
+        opacity: 0.6;
+    }
+
+    fluent-tab[aria-selected="true"] svg {
+        opacity: 1;
+    }
+
+/* 9.2. Button press effects ------------------------------------------- */
+fluent-button::part(control) {
+    transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.2s ease, border-color 0.2s ease;
+    transform: translateY(0px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+    fluent-button::part(control):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    fluent-button::part(control):active {
+        transform: translateY(2px);
+        box-shadow: 0 0px 2px rgba(0, 0, 0, 0.1);
+        transition: transform 0.06s ease, box-shadow 0.06s ease;
+    }
+
+fluent-button[disabled]::part(control) {
+    transform: none;
+    box-shadow: none;
+}
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 10. LOADING ANIMATION                                                     */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+.loading-progress {
+    position: relative;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    margin: 20vh auto 1rem auto;
+}
+
+#logo-anim path:nth-child(1) {
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    stroke-width: 1.25em;
+    fill: #682A7B;
+    fill-opacity: 0.1;
+    animation: line-anim 2s ease forwards, fill-anim 1s ease forwards 1.5s;
+}
+
+#logo-anim path:nth-child(2) {
+    stroke-width: 1.25em;
+    stroke-dasharray: 2000;
+    stroke-dashoffset: 2000;
+    fill: #4A81C3;
+    fill-opacity: 0.1;
+    animation: line-anim 2s ease forwards, fill-anim 3s ease forwards 1.2s;
+}
+
+@keyframes line-anim {
+    to {
+        stroke-dashoffset: 0;
+        stroke-width: 0;
+    }
+}
+
+@keyframes fill-anim {
+    from {
+        fill-opacity: 0.1;
+    }
+
+    to {
+        fill-opacity: 1;
+    }
+}
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    margin-top: 80px;
+}
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 11. YOUTUBE RESPONSIVE                                                    */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/*
+    Cách dùng:
+    <div class="youtube-responsive">
+      <iframe src="https://www.youtube.com/embed/..." frameborder="0" allowfullscreen></iframe>
+    </div>
+*/
+.youtube-responsive {
+    position: relative;
+    height: 0;
+    padding-top: 56%;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+    .youtube-responsive iframe,
+    .youtube-responsive object,
+    .youtube-responsive embed {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .youtube-responsive .fluid-vids {
+        position: initial !important;
+    }
+
+.youtube-title {
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    min-height: 24px;
+}
+
+.youtube-thumbnail {
+    position: relative;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+    .youtube-thumbnail img {
+        width: 100%;
+    }
+
+
+/* ════════════════════════════════════════════════════════════════════════ */
+/* 12. RESPONSIVE MEDIA QUERIES                                              */
+/* ════════════════════════════════════════════════════════════════════════ */
+
+/* 12.1. Mobile (< 768px) ---------------------------------------------- */
+@media (max-width: 767px) {
+    .siteheader {
+        grid-area: header;
+        grid-template-columns: 150px 1fr;
+        align-items: center;
+        justify-content: flex-start;
+    }
+
+        .siteheader .search {
+            display: none;
+        }
+
+        .siteheader .logo {
+            width: 160px;
+            height: 23px;
+        }
+
+    .body-stack {
+        flex-direction: column !important;
+    }
+
+    nav.sitenav {
+        width: 100%;
+        height: calc(100dvh - 50px);
+    }
+
+    .navmenu {
+        width: 100%;
+    }
+
+    #navmenu-toggle {
+        appearance: none;
+    }
+
+    .navmenu-icon {
+        cursor: pointer;
+        z-index: 10;
+        display: block;
+        position: absolute;
+        top: 15px;
+        left: unset;
+        right: 20px;
+        width: 20px;
+        height: 20px;
+        border: none;
+    }
+
+    [dir="rtl"] .navmenu-icon {
+        left: 20px;
+        right: unset;
+    }
+
+    #navmenu-toggle ~ nav {
+        display: none;
+    }
+
+    #navmenu-toggle:checked ~ nav {
+        display: block;
+    }
+
+    #navmenu-toggle ~ article {
+        display: block;
+    }
+
+    #navmenu-toggle:checked ~ article {
+        display: none;
+    }
+
+    .content {
+        flex-direction: column;
+    }
+
+    article {
+        padding-top: 0px;
+        width: 100%;
+    }
+
+    aside {
+        padding: 1em 0.75em;
+        width: 100%;
+    }
+
+    .footer {
+        display: grid;
+        grid-template-columns: 10px auto 10px;
+    }
+
+        .footer .version {
+            grid-column: 2;
+            justify-self: start;
+        }
+
+        .footer .copy {
+            grid-column: 2;
+            grid-row: 2;
+            justify-self: end;
+        }
+
+    /* Mobile + landscape */
+    @media screen and (max-width: 767px) and (orientation: landscape) {
+        nav {
+            padding: 25px 40px;
+        }
+
+            nav ul {
+                margin: 0 0;
+            }
+    }
+}
+
+/* 12.2. Tablet (768px - 1279px) --------------------------------------- */
+@media (min-width: 768px) and (max-width: 1279px) {
+    fluent-select::part(control) {
+        width: 150px;
+    }
+
+    .content {
+        flex-direction: column;
+    }
+
+    aside {
+        padding: 1.5em 0.75em 1em 0.75em;
+        width: 100%;
+        height: 100% !important;
+        max-height: 100% !important;
+    }
+
+    article {
+        padding-top: 0px;
+        width: 100%;
+    }
+}
+
+/* 12.3. Surface Duo (dual screen) ------------------------------------- */
+@media (horizontal-viewport-segments: 2) {
+    .siteheader {
+        grid-area: header;
+        display: grid;
+        grid-template-columns: 150px calc(env(viewport-segment-width 0 0) - 160px) 1fr;
+        grid-template-rows: 1fr;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 12px 0;
+        background-color: var(--neutral-layer-4);
+    }
+
+        .siteheader a {
+            padding: 0px 15px;
+            color: var(--neutral-foreground-rest);
+        }
+
+        .siteheader .logo {
+            grid-column: 1;
+            width: 108px;
+            height: 23px;
+        }
+
+    main {
+        display: grid;
+        grid-template-columns: env(viewport-segment-width 0 0) 1fr;
+        grid-template-rows: repeat(0, 1fr);
+    }
+
+    nav {
+        grid-column: 1;
+        width: env(viewport-segment-width 0 0) !important;
+    }
+
+    .content {
+        display: grid;
+        grid-template-columns: auto;
+    }
+
+    aside {
+        grid-area: 2 / 2 / 3 / 3;
+        padding: 1.5em 0.75em 1em 0.75em;
+        margin-inline-start: calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0));
+        margin-inline-end: calc(100% - env(viewport-segment-left 1 0));
+        width: auto;
+    }
+
+    article {
+        grid-area: 1 / 2 / 2 / 3;
+        padding-top: 0px;
+        margin-inline-start: calc(env(viewport-segment-left 1 0) - env(viewport-segment-right 0 0));
+        margin-inline-end: calc(100% - env(viewport-segment-left 1 0));
+        width: auto;
+    }
+}
+
+/* 12.4. Dialog kích thước theo màn hình ------------------------------- */
+@media (min-width: 800px) {
+    .fluent-dialog-main {
+        --dialog-width: 340px;
+    }
+}
+
+@media (max-width: 480px) {
+    .fluent-dialog-main {
+        --dialog-width: 100vw;
+    }
+}

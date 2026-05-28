@@ -1,0 +1,52 @@
+@inherits LayoutComponentBase
+@layout EmptyLayout
+
+<PageTitle>Dự đoán bệnh</PageTitle>
+
+<ModelLoadingGate />
+
+<FluentLayout>
+    <FluentHeader Class="siteheader">
+        <div class="site-brand">
+            <FluentIcon Value="@(new Icons.Filled.Size24.LeafTwo())" Color="Color.Fill" />
+            <span class="brand-title">HỆ THỐNG CHẨN ĐOÁN BỆNH CHO CÂY TRỒNG</span>
+        </div>
+        <FluentSpacer />
+        <div class="header-user">
+            <FluentIcon Value="@(new Icons.Regular.Size20.PersonCircle())" Color="Color.Fill" />
+            <span>Người dùng</span>
+            <a href="/account/login" class="header-logout" title="Đăng xuất">
+                <FluentIcon Value="@(new Icons.Regular.Size20.SignOut())" Color="Color.Fill" />
+            </a>
+        </div>
+    </FluentHeader>
+
+    <FluentStack Class="body-stack" Orientation="Orientation.Horizontal" Width="100%" HorizontalGap="0">
+        <NavMenu />
+        <FluentBodyContent Class="body-content">
+            <div class="content-wrap">
+                <article>
+                    @Body
+                </article>
+                <FluentToastProvider MaxToastCount="10" Position="ToastPosition.TopRight" />
+                <FluentDialogProvider />
+                <FluentTooltipProvider />
+                <FluentMenuProvider />
+            </div>
+        </FluentBodyContent>
+    </FluentStack>
+</FluentLayout>
+
+<div id="blazor-error-ui" data-nosnippet>
+    Đã xảy ra lỗi không xử lý được.
+    <a href="." class="reload">Tải lại</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+<style>
+    @@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+    .brand-title {
+        font-family: 'Times New Roman', Times, serif !important;
+    }
+</style>

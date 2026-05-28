@@ -1,0 +1,84 @@
+@namespace Service.UI.Components.Shared
+@using System.Net.Http.Json
+@inject IHttpClientFactory HttpClientFactory
+@implements IDisposable
+
+@if (!_ready)
+{
+    <div class="model-gate-overlay">
+        <div class="model-gate-box">
+            <FluentProgressRing />
+            <div class="model-gate-title">Đang khởi tạo mô hình chẩn đoán…</div>
+            <div class="model-gate-sub">@_status</div>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _ready;
+    private string _status = "Vui lòng đợi trong giây lát.";
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _cts is not null) return;
+        _cts = new CancellationTokenSource();
+        _ = PollAsync(_cts.Token);
+        await Task.CompletedTask;
+    }
+
+    private async Task PollAsync(CancellationToken ct)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromSeconds(1.5));
+        while (!ct.IsCancellationRequested)
+        {
+            try
+            {
+                using var client = HttpClientFactory.CreateClient("PredictApi");
+                var resp = await client.GetFromJsonAsync<ReadyDto>("/api/health/ready", ct);
+
+                if (resp is { Ready: true })
+                {
+                    _ready = true;
+                    await InvokeAsync(StateHasChanged);
+                    return;
+                }
+
+                _status = resp is not null && !string.IsNullOrEmpty(resp.Error)
+                    ? $"Lỗi tải mô hình: {resp.Error}"
+                    : "Đang nạp mô hình lên bộ nhớ…";
+                await InvokeAsync(StateHasChanged);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch
+            {
+                _status = "Đang kết nối tới máy chủ mô hình…";
+                await InvokeAsync(StateHasChanged);
+            }
+
+            try
+            {
+                if (!await timer.WaitForNextTickAsync(ct)) return;
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+
+    private sealed class ReadyDto
+    {
+        public bool Ready { get; set; }
+        public string? Error { get; set; }
+    }
+}

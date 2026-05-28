@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    <RootNamespace>Service.UI</RootNamespace>
+    <AssemblyName>Service.UI</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.13.1" />
+    <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components.Icons" Version="4.13.1" />
+  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Service.UI.Component.Shared" Version="1.4.20" />
+		<PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.5" />
+		<PackageReference Include="Service.Shared.Web" Version="1.1.5" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Service.Share.Contract\Service.Share.Contract.csproj" />
+	</ItemGroup>
+
+</Project>

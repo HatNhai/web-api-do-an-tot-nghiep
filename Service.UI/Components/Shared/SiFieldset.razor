@@ -1,0 +1,22 @@
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<fieldset class="fluent-fieldset">
+    <legend>
+        <FluentStack Orientation="Orientation.Horizontal" Gap="6">
+            <h6 class="fluent-label" style="@CustomStyle">
+                @TieuDe
+            </h6>
+        </FluentStack>
+    </legend>
+    @NoiDung
+</fieldset>
+
+@code {
+    [Parameter]
+    public string TieuDe { get; set; } = "Tiêu đề";
+
+    [Parameter]
+    public RenderFragment? NoiDung { get; set; }
+    [Parameter]
+    public string CustomStyle { get; set; } = "";
+}

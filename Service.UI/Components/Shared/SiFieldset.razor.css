@@ -1,0 +1,46 @@
+.fluent-fieldset .fluent-label {
+    font-weight: 600 !important;
+    font-size: 15px;
+    background: var(--fill-color);
+}
+
+.fluent-fieldset {
+    position: relative;
+    width: 100%;
+    border: calc(var(--stroke-width) * 1px) solid var(--neutral-stroke-rest);
+    border-radius: calc(var(--control-corner-radius) * 1px);
+    padding: 1.5rem 1rem;
+    min-height: 100px;
+}
+
+    /* Legend chỉ ôm chữ */
+    .fluent-fieldset legend {
+        position: absolute;
+        top: -12px;
+        left: 12px;
+        padding: 0;
+        width: fit-content; /* QUAN TRỌNG */
+        line-height: 1;
+        z-index: 2;
+    }
+
+        /* CẮT VIỀN ĐÚNG SAU CHỮ */
+        .fluent-fieldset legend::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0; /* = đúng chiều rộng chữ */
+            top: 50%;
+            height: 2px;
+            background: var(--neutral-layer-1, #fff);
+            z-index: -1;
+        }
+
+        /* Label */
+        .fluent-fieldset legend .fluent-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 6px; /* tạo khoảng hở nhỏ 2 bên */
+            font-weight: 600;
+        }

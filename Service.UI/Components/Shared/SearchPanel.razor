@@ -1,0 +1,83 @@
+@namespace Service.UI.Components.Shared
+@using Microsoft.AspNetCore.Components
+@using Microsoft.FluentUI.AspNetCore.Components
+
+<SurfaceCard Class="@($"search-panel {Class}")">
+    <HeaderContent>
+        <h2>@Title</h2>
+    </HeaderContent>
+
+    <HeaderActions>
+        @if (HeaderActionsContent is not null)
+        {
+            @HeaderActionsContent
+        }
+        else if (AdvancedFields is not null)
+        {
+            <FluentButton Appearance="Appearance.Outline" @onclick="ToggleAdvanced">
+                @(ShowAdvanced ? HideAdvancedText : ShowAdvancedText)
+            </FluentButton>
+        }
+    </HeaderActions>
+
+    <ChildContent>
+        <div class="search-grid basic-grid">
+            @BasicFields
+        </div>
+
+        @if (ShowAdvanced && AdvancedFields is not null)
+        {
+            <div class="search-grid advanced-grid">
+                @AdvancedFields
+            </div>
+        }
+
+        @if (Actions is not null)
+        {
+            <div class="search-actions @ActionsClass">
+                @Actions
+            </div>
+        }
+    </ChildContent>
+</SurfaceCard>
+
+@code {
+    [Parameter]
+    public string Title { get; set; } = "Bộ lọc tìm kiếm";
+
+    [Parameter]
+    public string Class { get; set; } = string.Empty;
+
+    [Parameter]
+    public bool ShowAdvanced { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> ShowAdvancedChanged { get; set; }
+
+    [Parameter]
+    public string ShowAdvancedText { get; set; } = "Mở tìm kiếm nâng cao";
+
+    [Parameter]
+    public string HideAdvancedText { get; set; } = "Ẩn tìm kiếm nâng cao";
+
+    [Parameter, EditorRequired]
+    public RenderFragment? BasicFields { get; set; }
+
+    [Parameter]
+    public RenderFragment? AdvancedFields { get; set; }
+
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+
+    [Parameter]
+    public RenderFragment? HeaderActionsContent { get; set; }
+
+    [Parameter]
+    public string ActionsClass { get; set; } = string.Empty;
+
+    private async Task ToggleAdvanced()
+    {
+        ShowAdvanced = !ShowAdvanced;
+        await ShowAdvancedChanged.InvokeAsync(ShowAdvanced);
+    }
+}

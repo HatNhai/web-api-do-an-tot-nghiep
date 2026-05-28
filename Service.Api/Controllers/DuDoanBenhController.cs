@@ -87,8 +87,8 @@ namespace Service.Api.Controllers.v1
         /// <param name="searchOptions">Điều kiện tìm kiếm</param>
         /// <returns>Danh sách chẩn đoán phân trang</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        [HttpPost("GetPaged")]
-        public async Task<IActionResult> GetPaged([FromBody] DiagnosisQuery searchOptions)
+        [HttpPost("GetPaged/{year:int?}")]
+        public async Task<IActionResult> GetPaged([FromBody] DiagnosisQuery searchOptions, int? year = null)
         {
             if (searchOptions == null)
             {

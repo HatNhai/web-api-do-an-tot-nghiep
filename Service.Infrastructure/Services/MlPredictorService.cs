@@ -128,6 +128,29 @@ namespace Service.Infrastructure.Services
 
 
         /// <summary>
+        /// Chạy thử pipeline với 1 ảnh giả 256x256 để ép load model + JIT toàn bộ
+        /// pipeline ngay khi khởi động (gọi từ Program.cs), tránh cold-start rơi vào
+        /// request dự đoán đầu tiên gây timeout.
+        /// </summary>
+        public void Warmup()
+        {
+            var sw = Stopwatch.StartNew();
+            try
+            {
+                using var dummy = new Mat(ImageSize, ImageSize, MatType.CV_8UC3, Scalar.All(127));
+                Cv2.ImEncode(".jpg", dummy, out byte[] bytes);
+                Predict(bytes);
+                sw.Stop();
+                _logger.LogInformation("Warm-up ML pipeline hoàn tất trong {Elapsed} ms.", sw.ElapsedMilliseconds);
+            }
+            catch (Exception ex)
+            {
+                sw.Stop();
+                _logger.LogWarning(ex, "Warm-up ML pipeline thất bại sau {Elapsed} ms (sẽ load lazy ở request đầu).", sw.ElapsedMilliseconds);
+            }
+        }
+
+        /// <summary>
         /// Decode byte[] thành Mat RGB và resize về 256x256.
         /// </summary>
         private static Mat DecodeAndResize(byte[] imageBytes)

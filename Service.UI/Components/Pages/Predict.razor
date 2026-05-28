@@ -1,0 +1,353 @@
+@page "/"
+@page "/du-doan"
+@rendermode InteractiveServer
+@inject IHttpClientFactory HttpClientFactory
+@inject IToastService ToastService
+
+<PageTitle>Dự đoán bệnh</PageTitle>
+
+<FluentStack Orientation="Orientation.Vertical" VerticalGap="12">
+    <h2>Dự đoán bệnh từ ảnh</h2>
+
+    <div class="predict-layout">
+
+        <SurfaceCard Class="upload-card">
+            <div class="card-title">
+                <FluentIcon Value="@(new Icons.Regular.Size20.ImageArrowCounterclockwise())" Color="Color.Accent" />
+                <span>1. Tải ảnh đầu vào</span>
+            </div>
+
+            @if (!string.IsNullOrEmpty(_previewUrl))
+            {
+                <div class="upload-zone">
+                    <div class="preview-wrap">
+                        <img src="@_previewUrl" alt="Ảnh đã chọn" class="preview-img" />
+                        <div class="preview-meta">
+                            <div class="preview-name">@_fileName</div>
+                            <div class="preview-size">@_fileSize</div>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <FluentInputFile Mode="InputFileMode.SaveToTemporaryFolder"
+                                 Accept="image/*"
+                                 MaximumFileCount="1"
+                                 MaximumFileSize="20_000_000"
+                                 DragDropZoneVisible="true"
+                                 OnCompleted="OnFileUploaded"
+                                 Class="upload-input">
+                    <ChildContent>
+                        <div class="upload-empty">
+                            <FluentIcon Value="@(new Icons.Regular.Size48.CloudArrowUp())" Color="Color.Accent" />
+                            <div class="upload-empty-title">Kéo thả ảnh vào đây</div>
+                            <div class="upload-empty-sub">hoặc nhấn vào khung này để chọn ảnh</div>
+                        </div>
+                    </ChildContent>
+                </FluentInputFile>
+            }
+
+            <div class="upload-actions">
+                <FluentButton Appearance="Appearance.Outline"
+                              IconStart="@(new Icons.Regular.Size20.Delete())"
+                              Disabled="@string.IsNullOrEmpty(_previewUrl)"
+                              OnClick="ClearImage">
+                    Xóa ảnh
+                </FluentButton>
+            </div>
+
+            <div class="card-title" style="margin-top:18px;">
+                <FluentIcon Value="@(new Icons.Regular.Size20.NoteEdit())" Color="Color.Accent" />
+                <span>2. Ghi chú (tùy chọn)</span>
+            </div>
+
+            <FluentTextArea @bind-Value="_notes"
+                            Placeholder="Nhập ghi chú thêm về ca chẩn đoán..."
+                            Style="width:100%; min-height:88px;" />
+
+            <div class="predict-actions">
+                <FluentButton Appearance="Appearance.Accent"
+                              IconStart="@(new Icons.Regular.Size20.Sparkle())"
+                              Disabled="@(string.IsNullOrEmpty(_previewUrl) || _isPredicting)"
+                              OnClick="StartPredict">
+                    @(_isPredicting ? "Đang dự đoán..." : "Bắt đầu dự đoán")
+                </FluentButton>
+                <FluentButton Appearance="Appearance.Stealth"
+                              IconStart="@(new Icons.Regular.Size20.ArrowReset())"
+                              Disabled="@_isPredicting"
+                              OnClick="ResetAll">
+                    Làm mới
+                </FluentButton>
+            </div>
+        </SurfaceCard>
+
+        <SurfaceCard Class="result-card">
+            <div class="card-title">
+                <FluentIcon Value="@(new Icons.Regular.Size20.DataPie())" Color="Color.Accent" />
+                <span>Kết quả chẩn đoán</span>
+            </div>
+
+            @if (_isPredicting)
+            {
+                <div class="result-loading">
+                    <FluentProgressRing />
+                    <div>Đang phân tích ảnh, vui lòng chờ...</div>
+                </div>
+            }
+            else if (_result is null)
+            {
+                <div class="result-empty">
+                    <FluentIcon Value="@(new Icons.Regular.Size48.Document())" Color="Color.Neutral" />
+                    <div>Chưa có kết quả. Hãy chọn ảnh và bấm "Bắt đầu dự đoán".</div>
+                </div>
+            }
+            else
+            {
+                <div class="result-headline @GetSeverityClass(_result.SeverityLevel)">
+                    <div class="result-headline-label">Mức độ bệnh</div>
+                    <div class="result-headline-value">@_result.SeverityName</div>
+                </div>
+
+                <div class="result-grid">
+                    <div class="result-cell">
+                        <div class="cell-label">Tỉ lệ vùng bệnh</div>
+                        <div class="cell-value">@_result.SeverityRatio.ToString("P1")</div>
+                        <FluentProgress Min="0" Max="100" Value="@((int)(_result.SeverityRatio * 100))" />
+                    </div>
+                    <div class="result-cell">
+                        <div class="cell-label">Độ tin cậy</div>
+                        <div class="cell-value">@_result.Confidence.ToString("P1")</div>
+                        <FluentProgress Min="0" Max="100" Value="@((int)(_result.Confidence * 100))" />
+                    </div>
+                </div>
+
+                <FluentDivider Style="margin: 12px 0;" />
+
+                <div class="result-meta">
+                    <div><span>Thời gian xử lý:</span> <b>@_result.ProcessingMs ms</b></div>
+                    <div><span>Mô hình:</span> <b>@_result.ModelName</b></div>
+                    <div><span>Mã chẩn đoán:</span> <b>@_result.Id</b></div>
+                    <div><span>Thời điểm:</span> <b>@_result.CreatedAt.ToString("dd/MM/yyyy HH:mm:ss")</b></div>
+                </div>
+
+                <div class="result-actions">
+                    <FluentButton Appearance="Appearance.Outline"
+                                  IconStart="@(new Icons.Regular.Size20.Save())">
+                        Lưu kết quả
+                    </FluentButton>
+                    <FluentButton Appearance="Appearance.Outline"
+                                  IconStart="@(new Icons.Regular.Size20.Print())">
+                        In phiếu
+                    </FluentButton>
+                </div>
+            }
+        </SurfaceCard>
+    </div>
+</FluentStack>
+
+@code {
+    private string? _previewUrl;
+    private string? _fileName;
+    private string? _fileSize;
+    private string? _localFilePath;
+    private string? _contentType;
+    private string _notes = string.Empty;
+    private bool _isPredicting;
+    private PredictResultVm? _result;
+
+    private Task OnFileUploaded(IEnumerable<FluentInputFileEventArgs> files)
+    {
+        var file = files.FirstOrDefault();
+        if (file is null) return Task.CompletedTask;
+
+        _fileName = file.Name;
+        _fileSize = FormatFileSize(file.Size);
+        _localFilePath = file.LocalFile?.FullName;
+        _contentType = string.IsNullOrEmpty(file.ContentType) ? "image/jpeg" : file.ContentType;
+
+        if (!string.IsNullOrEmpty(_localFilePath))
+        {
+            try
+            {
+                var bytes = File.ReadAllBytes(_localFilePath);
+                var base64 = Convert.ToBase64String(bytes);
+                _previewUrl = $"data:{_contentType};base64,{base64}";
+            }
+            catch
+            {
+                _previewUrl = null;
+            }
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void ClearImage()
+    {
+        TryDeleteTempFile();
+        _previewUrl = null;
+        _fileName = null;
+        _fileSize = null;
+        _localFilePath = null;
+        _contentType = null;
+    }
+
+    private void ResetAll()
+    {
+        ClearImage();
+        _notes = string.Empty;
+        _result = null;
+    }
+
+    private void TryDeleteTempFile()
+    {
+        if (!string.IsNullOrEmpty(_localFilePath) && File.Exists(_localFilePath))
+        {
+            try { File.Delete(_localFilePath); } catch { /* ignore */ }
+        }
+    }
+
+    private async Task StartPredict()
+    {
+        if (string.IsNullOrEmpty(_localFilePath) || !File.Exists(_localFilePath))
+        {
+            ToastService.ShowError("Chưa có ảnh hợp lệ để dự đoán.");
+            return;
+        }
+
+        _isPredicting = true;
+        _result = null;
+        StateHasChanged();
+
+        var sw = System.Diagnostics.Stopwatch.StartNew();
+        try
+        {
+            using var client = HttpClientFactory.CreateClient("PredictApi");
+            using var form = new MultipartFormDataContent();
+
+            var bytes = await File.ReadAllBytesAsync(_localFilePath);
+            var imageContent = new ByteArrayContent(bytes);
+            imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(_contentType ?? "image/jpeg");
+            form.Add(imageContent, "imageFile", _fileName ?? "image.jpg");
+
+            if (!string.IsNullOrWhiteSpace(_notes))
+            {
+                form.Add(new StringContent(_notes), "notes");
+            }
+
+            var response = await client.PostAsync("/api/v1/Predict/Predict", form);
+            sw.Stop();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                ToastService.ShowError($"API lỗi {(int)response.StatusCode}: {Truncate(error, 200)}");
+                return;
+            }
+
+            var dto = await response.Content.ReadFromJsonAsync<DiagnosisDto>();
+            if (dto is null)
+            {
+                ToastService.ShowError("Không đọc được kết quả từ API.");
+                return;
+            }
+
+            _result = new PredictResultVm
+            {
+                Id = dto.Id.ToString(),
+                SeverityLevel = dto.SeverityLevel,
+                SeverityName = MapSeverityName(dto.SeverityLevel, dto.SeverityLevelName),
+                SeverityRatio = dto.SeverityRatio,
+                Confidence = dto.Confidence,
+                ProcessingMs = sw.ElapsedMilliseconds,
+                ModelName = string.IsNullOrEmpty(dto.ModelUsed) ? "MLP + RandomForest" : dto.ModelUsed,
+                CreatedAt = dto.DiagnosedAt == default ? DateTime.Now : dto.DiagnosedAt,
+            };
+
+            ToastService.ShowSuccess($"Dự đoán xong: {_result.SeverityName} ({_result.Confidence:P1})");
+        }
+        catch (TaskCanceledException)
+        {
+            ToastService.ShowError("Yêu cầu hết thời gian chờ. Vui lòng thử lại.");
+        }
+        catch (HttpRequestException ex)
+        {
+            ToastService.ShowError($"Không kết nối được API: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            ToastService.ShowError($"Lỗi khi dự đoán: {ex.Message}");
+        }
+        finally
+        {
+            _isPredicting = false;
+        }
+    }
+
+    private static string MapSeverityName(int level, string? apiName)
+    {
+        if (!string.IsNullOrEmpty(apiName) && !apiName.Equals("Unknown", StringComparison.OrdinalIgnoreCase))
+        {
+            return apiName switch
+            {
+                "Healthy" => "Bình thường",
+                "Mild" => "Nhẹ",
+                "Moderate" => "Trung bình",
+                "Severe" => "Nặng",
+                _ => apiName
+            };
+        }
+        return level switch
+        {
+            0 => "Bình thường",
+            1 => "Nhẹ",
+            2 => "Trung bình",
+            _ => "Nặng"
+        };
+    }
+
+    private static string Truncate(string s, int max) =>
+        string.IsNullOrEmpty(s) ? "" : (s.Length <= max ? s : s.Substring(0, max) + "...");
+
+    private static string GetSeverityClass(int level) => level switch
+    {
+        0 => "sev-normal",
+        1 => "sev-mild",
+        2 => "sev-moderate",
+        _ => "sev-severe"
+    };
+
+    private static string FormatFileSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:0.0} KB";
+        return $"{bytes / 1024.0 / 1024.0:0.0} MB";
+    }
+
+    private class PredictResultVm
+    {
+        public string Id { get; set; } = string.Empty;
+        public int SeverityLevel { get; set; }
+        public string SeverityName { get; set; } = string.Empty;
+        public double SeverityRatio { get; set; }
+        public double Confidence { get; set; }
+        public long ProcessingMs { get; set; }
+        public string ModelName { get; set; } = string.Empty;
+        public DateTime CreatedAt { get; set; }
+    }
+
+    private class DiagnosisDto
+    {
+        public Guid Id { get; set; }
+        public int SeverityLevel { get; set; }
+        public string SeverityLevelName { get; set; } = string.Empty;
+        public double SeverityRatio { get; set; }
+        public double Confidence { get; set; }
+        public string ModelUsed { get; set; } = string.Empty;
+        public string? ImageFileName { get; set; }
+        public string? ImagePath { get; set; }
+        public DateTime DiagnosedAt { get; set; }
+        public string? Notes { get; set; }
+    }
+}
